@@ -16,6 +16,7 @@ line1([<<"add">>, Name, Ttl, Type| _], L) ->
     [_, Data0] = string:split(L, Type, leading),
     Data = string:trim(Data0, leading, " "),
     {add, Name, erlang:binary_to_integer(Ttl), <<"IN">>, Type, Data};
+line1([<<"del">> | T], L) -> line1([<<"delete">> | T], L);
 line1([<<"delete">>, Name], _) -> {delete, Name};
 line1([<<"delete">>, Name, Type], _) -> {delete, Name, <<"ANY">>, Type};
 line1([<<"delete">>, Name, Type |_], L) ->
