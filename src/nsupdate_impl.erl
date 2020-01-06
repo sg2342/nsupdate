@@ -83,16 +83,16 @@ update_msg1({delete, Name, Class, Type, Data}) ->
 	   , ttl = 0
 	   , type = T
 	   , data = update_msg2(T, Data)};
-update_msg1({delete, Name, Class, Type}) ->
+update_msg1({delete, Name, _Class, Type}) ->
     T = nsupdate_bstr:type(Type),
     #dns_rr{ name = Name
-	   , class = nsupdate_bstr:class(Class)
+	   , class = nsupdate_bstr:class(<<"ANY">>)
 	   , ttl = 0
 	   , type = T
 	   , data = <<>>};
-update_msg1({delete, Name, Class}) ->
+update_msg1({delete, Name, _Class}) ->
     #dns_rr{ name = Name
-	   , class = nsupdate_bstr:class(Class)
+	   , class = nsupdate_bstr:class(<<"ANY">>)
 	   , ttl = 0
 	   , type = ?DNS_TYPE_ANY
 	   , data = <<>>};

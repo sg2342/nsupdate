@@ -12,14 +12,19 @@ line(Prompt) ->
 line1([], _) -> send;
 line1([<<"send">>], _) -> send;
 line1([<<"update">> | T], L) -> line1(T,L);
+line1([<<"add">>, Name, Ttl, <<"IN">> ,Type| T], L) ->
+    line1([<<"add">>, Name, Ttl, Type |T], L);
 line1([<<"add">>, Name, Ttl, Type| _], L) ->
     [_, Data0] = string:split(L, Type, leading),
     Data = string:trim(Data0, leading, " "),
     {add, Name, erlang:binary_to_integer(Ttl), <<"IN">>, Type, Data};
-line1([<<"del">> | T], L) -> line1([<<"delete">> | T], L);
-line1([<<"delete">>, Name], _) -> {delete, Name};
-line1([<<"delete">>, Name, Type], _) -> {delete, Name, <<"ANY">>, Type};
-line1([<<"delete">>, Name, Type |_], L) ->
+line1([<<"delete">> | T], L) -> line1([<<"del">> | T], L);
+line1([<<"del">>, Name, <<X:8/integer, _/binary>> | T], L)
+  when X >= $0, X =< $9 -> line1([<<"del">>, Name |T], L);
+line1([<<"del">>, Name, <<"IN">> | T], L) -> line1([<<"del">>, Name | T], L);
+line1([<<"del">>, Name], _) -> {delete, Name, <<"IN">>};
+line1([<<"del">>, Name, Type], _) -> {delete, Name, <<"IN">>, Type};
+line1([<<"del">>, Name, Type |_], L) ->
     [_, Data0] = string:split(L, Type, leading),
     Data = string:trim(Data0, both, " "),
     {delete, Name, <<"IN">>, Type, Data};
