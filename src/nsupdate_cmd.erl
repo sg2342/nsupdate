@@ -1,6 +1,6 @@
 -module(nsupdate_cmd).
 
--export([do/1]).
+-export([do/1, do/0]).
 
 line() -> line(">> ").
 
@@ -22,19 +22,42 @@ line1([<<"delete">>, Name, Type |_], L) ->
     [_, Data0] = string:split(L, Type, leading),
     Data = string:trim(Data0, leading, " "),
     {delete, Name, <<"IN">>, Type, Data};
+line1([<<"key">>, Name, Secret], _) -> {key, Name, Secret};
 line1([<<"zone">>, Zone], _) -> {zone, Zone};
 line1([<<"server">>, Host], _) -> {server, erlang:binary_to_list(Host)};
 line1([<<"server">>, Host, Port], _) ->
     {server, {erlang:binary_to_list(Host), erlang:binary_to_integer(Port)}}.
 
 
-do(Key) -> do(line(), #{ key => Key, updates => [] }).
+do(Key) ->
+    do(line(), #{ key => Key
+		, timeout => timer:seconds(300)
+		, protocol => tcp
+		, local => {any, 0}
+		, updates => [] }).
+
+do() ->
+    do(line(), #{ timeout => timer:seconds(300)
+		, protocol => tcp
+		, local => {any, 0}
+		, updates => [] }).
+
 
 do(send, #{ key := Key, updates := Updates, zone := Zone, server := Server}) ->
     nsupdate_impl:query(Server, Key, Zone, lists:reverse(Updates));
 do(send, _) -> {error, missing_input};
 do({zone, Zone}, #{ } = D) -> do(line(), D#{ zone => Zone });
 do({server, Server}, #{ } = D) -> do(line(), D#{ server => Server});
+do({key, Name, Secret}, #{ } = D) ->
+    K = base64:decode(Secret),
+    Alg = case size(K) of
+	      64 -> <<"hmac-sha512">>;
+	      48 -> <<"hmac-sha384">>;
+	      32 -> <<"hmac-sha256">>;
+	      28 -> <<"hmac-sha225">>;
+	      20 -> <<"hmac-sha1">>;
+	      16 -> <<"hmac-md5.sig-alg.reg.int">> end,
+    do(line(), D#{ key => {Name, Alg, K}});
 do(U, #{ updates := Updates } = D) ->
     do(line(), D#{ updates => [U|Updates]}).
 
