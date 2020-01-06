@@ -23,6 +23,12 @@ line1([<<"delete">>, Name, Type |_], L) ->
     Data = string:trim(Data0, leading, " "),
     {delete, Name, <<"IN">>, Type, Data};
 line1([<<"key">>, Name, Secret], _) -> {key, Name, Secret};
+line1([<<"local">>, Addr, Port], _) ->
+    {ok, A} = inet_parse:strict_address(erlang:binary_to_list(Addr)),
+    {local, A, erlang:binary_to_integer(Port)};
+line1([<<"local">>, Addr], _) ->
+    {ok, A} = inet_parse:strict_address(erlang:binary_to_list(Addr)),
+    {local, A, 0};
 line1([<<"zone">>, Zone], _) -> {zone, Zone};
 line1([<<"server">>, Host], _) -> {server, erlang:binary_to_list(Host)};
 line1([<<"server">>, Host, Port], _) ->
@@ -48,6 +54,7 @@ do(send, #{ key := Key, updates := Updates, zone := Zone, server := Server}) ->
 do(send, _) -> {error, missing_input};
 do({zone, Zone}, #{ } = D) -> do(line(), D#{ zone => Zone });
 do({server, Server}, #{ } = D) -> do(line(), D#{ server => Server});
+do({local, Addr, Port}, #{ } = D) -> do(line(), D#{ local => {Addr, Port}});
 do({key, Name, Secret}, #{ } = D) ->
     K = base64:decode(Secret),
     Alg = case size(K) of
