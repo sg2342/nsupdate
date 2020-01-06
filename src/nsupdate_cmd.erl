@@ -21,7 +21,7 @@ line1([<<"delete">>, Name], _) -> {delete, Name};
 line1([<<"delete">>, Name, Type], _) -> {delete, Name, <<"ANY">>, Type};
 line1([<<"delete">>, Name, Type |_], L) ->
     [_, Data0] = string:split(L, Type, leading),
-    Data = string:trim(Data0, leading, " "),
+    Data = string:trim(Data0, both, " "),
     {delete, Name, <<"IN">>, Type, Data};
 line1([<<"key">>, Name, Secret], _) -> {key, Name, Secret};
 line1([<<"local">>, Addr, Port], _) ->

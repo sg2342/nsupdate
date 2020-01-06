@@ -119,6 +119,10 @@ update_msg2(?DNS_TYPE_AAAA, B) ->
     #dns_rrdata_a{ip = A};
 update_msg2(?DNS_TYPE_CNAME, Dname) ->
     #dns_rrdata_cname{dname = string:trim(Dname, both, " ")};
-update_msg2(?DNS_TYPE_TXT, Txt) -> #dns_rrdata_txt{txt = Txt}.
+update_msg2(?DNS_TYPE_TXT, Txt) -> #dns_rrdata_txt{txt = string_list(Txt)}.
 
 
+string_list(Bin) ->
+    {ok,R} = re:compile("(\".*?\"|[^\" \\s]+)(?=\\s* |\\s*$)"),
+    {match, Matches} = re:run(Bin, R, [{capture,[1],list},global]),
+    [string:trim(M, both, "\"") || [M] <- Matches].
