@@ -1,6 +1,7 @@
 -module(nsupdate_cmd).
 
 -export([do/1, do/0]).
+-export([parse_key/1]).
 
 line() -> line(">> ").
 
@@ -54,14 +55,13 @@ do() ->
 		, local => {any, 0}
 		, updates => [] }).
 
+parse_key(Bin) when is_binary(Bin) ->
+    [Name |L] = string:split(string:trim(Bin), <<" ">>, all),
+    [Secret| _] = lists:reverse(L),
+    {Alg, K} = parse_key1(Secret),
+    {Name, Alg, K}.
 
-do(send, #{ key := Key, updates := Updates, zone := Zone, server := Server}) ->
-    nsupdate_impl:query(Server, Key, Zone, lists:reverse(Updates));
-do(send, _) -> {error, missing_input};
-do({zone, Zone}, #{ } = D) -> do(line(), D#{ zone => Zone });
-do({server, Server}, #{ } = D) -> do(line(), D#{ server => Server});
-do({local, Addr, Port}, #{ } = D) -> do(line(), D#{ local => {Addr, Port}});
-do({key, Name, Secret}, #{ } = D) ->
+parse_key1(Secret) ->
     K = base64:decode(Secret),
     Alg = case size(K) of
 	      64 -> <<"hmac-sha512">>;
@@ -70,6 +70,17 @@ do({key, Name, Secret}, #{ } = D) ->
 	      28 -> <<"hmac-sha225">>;
 	      20 -> <<"hmac-sha1">>;
 	      16 -> <<"hmac-md5.sig-alg.reg.int">> end,
+    {Alg, K}.
+
+
+do(send, #{ key := Key, updates := Updates, zone := Zone, server := Server}) ->
+    nsupdate_impl:query(Server, Key, Zone, lists:reverse(Updates));
+do(send, _) -> {error, missing_input};
+do({zone, Zone}, #{ } = D) -> do(line(), D#{ zone => Zone });
+do({server, Server}, #{ } = D) -> do(line(), D#{ server => Server});
+do({local, Addr, Port}, #{ } = D) -> do(line(), D#{ local => {Addr, Port}});
+do({key, Name, Secret}, #{ } = D) ->
+    {Alg, K} = parse_key1(Secret),
     do(line(), D#{ key => {Name, Alg, K}});
 do(U, #{ updates := Updates } = D) ->
     do(line(), D#{ updates => [U|Updates]}).

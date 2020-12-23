@@ -1,6 +1,6 @@
 {application, nsupdate,
- [{description, "An OTP application"},
-  {vsn, "0.1.0"},
+ [{description, "nsupdate - Dynamic DNS update utility"},
+  {vsn, git},
   {registered, []},
   {applications,
    [kernel,
