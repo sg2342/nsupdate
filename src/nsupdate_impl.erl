@@ -110,13 +110,13 @@ update_msg2(?DNS_TYPE_A, B) ->
 	inet_parse:strict_address(
 	  string:trim(erlang:binary_to_list(B), both, " ")),
     #dns_rrdata_a{ip = A};
-update_msg2(?DNS_TYPE_AAAA, {_,_,_,_,_,_,_,_} = A) ->
-    #dns_rrdata_aaaa{ip = A};
+update_msg2(?DNS_TYPE_AAAA, {_,_,_,_,_,_,_,_} = AAAA) ->
+    #dns_rrdata_aaaa{ip = AAAA};
 update_msg2(?DNS_TYPE_AAAA, B) ->
-    {ok, {_,_,_,_,_,_,_,_} = A} =
+    {ok, {_,_,_,_,_,_,_,_} = AAAA} =
 	inet_parse:strict_address(
 	  string:trim(erlang:binary_to_list(B), both, " ")),
-    #dns_rrdata_a{ip = A};
+    #dns_rrdata_aaaa{ip = AAAA};
 update_msg2(?DNS_TYPE_CNAME, Dname) ->
     #dns_rrdata_cname{dname = string:trim(Dname, both, " ")};
 update_msg2(?DNS_TYPE_TXT, Txt) -> #dns_rrdata_txt{txt = string_list(Txt)}.
