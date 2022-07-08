@@ -23,7 +23,6 @@ query(#{ key := { KeyName, Alg, Secret }
     , protocol := Proto }) ->
     Msg0 = update_msg(Zone, Updates),
     Msg = dns:add_tsig(Msg0, Alg, KeyName, Secret, 0),
-    self() ! Msg,
     Packet = dns:encode_message(Msg),
     query1({Proto, ServerName, Port}, Timeout, Local, Packet).
 
