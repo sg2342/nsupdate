@@ -20,8 +20,7 @@ line1([<<"update">> | T], L) ->
 line1([<<"add">>, Name, Ttl, <<"IN">>, Type | T], L) ->
     line1([<<"add">>, Name, Ttl, Type | T], L);
 line1([<<"add">>, Name, Ttl, Type | _], L) ->
-    [_, Data0] = string:split(L, Type, leading),
-    Data = string:trim(Data0, leading, " "),
+    Data = splint_and_trim(Type, L),
     {add, Name, erlang:binary_to_integer(Ttl), <<"IN">>, Type, Data};
 line1([<<"delete">> | T], L) ->
     line1([<<"del">> | T], L);
@@ -36,8 +35,7 @@ line1([<<"del">>, Name], _) ->
 line1([<<"del">>, Name, Type], _) ->
     {delete, Name, <<"IN">>, Type};
 line1([<<"del">>, Name, Type | _], L) ->
-    [_, Data0] = string:split(L, Type, leading),
-    Data = string:trim(Data0, both, " "),
+    Data = splint_and_trim(Type, L),
     {delete, Name, <<"IN">>, Type, Data};
 line1([<<"key">>, Name, Secret], _) ->
     {key, Name, Secret};
@@ -53,6 +51,10 @@ line1([<<"server">>, Host], _) ->
     {server, erlang:binary_to_list(Host)};
 line1([<<"server">>, Host, Port], _) ->
     {server, {erlang:binary_to_list(Host), erlang:binary_to_integer(Port)}}.
+
+splint_and_trim(L, Type) ->
+    [_, Data0] = string:split(L, Type, leading),
+    string:trim(Data0, both, " ").
 
 parse_key(Bin) when is_binary(Bin) ->
     [Name | L] = string:split(string:trim(Bin), <<" ">>, all),
