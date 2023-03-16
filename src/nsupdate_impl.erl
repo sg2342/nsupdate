@@ -34,12 +34,8 @@ query1({udp, Host, Port}, Timeout, {LocalAddr, LocalPort}, Packet) ->
         LocalPort,
         [binary, {active, false}, {ip, LocalAddr}]
     ),
-    gen_udp:send(Socket, Host, Port, Packet),
-    R =
-        case gen_udp:recv(Socket, 65535, Timeout) of
-            {ok, {Host, _Port, M}} -> qresult(dns:decode_message(M));
-            Res -> Res
-        end,
+    MaybeOk = gen_udp:send(Socket, Host, Port, Packet),
+    R = query2(MaybeOk, gen_udp, Socket, Host, Timeout),
     gen_udp:close(Socket),
     R;
 query1({tcp, Host, Port}, Timeout, {LocalAddr, LocalPort}, Packet) ->
@@ -54,14 +50,23 @@ query1({tcp, Host, Port}, Timeout, {LocalAddr, LocalPort}, Packet) ->
             {port, LocalPort}
         ]
     ),
-    gen_tcp:send(Socket, Packet),
-    R =
-        case gen_tcp:recv(Socket, 0, Timeout) of
-            {ok, M} -> qresult(dns:decode_message(M));
-            Res -> Res
-        end,
+    MaybeOk = gen_tcp:send(Socket, Packet),
+    R = query2(MaybeOk, gen_tcp, Socket, Host, Timeout),
     gen_tcp:close(Socket),
     R.
+
+query2(ok, gen_udp, Socket, Host, Timeout) ->
+    case gen_udp:recv(Socket, 65535, Timeout) of
+        {ok, {Host, _Port, M}} -> qresult(dns:decode_message(M));
+        Res -> Res
+    end;
+query2(ok, gen_tcp, Socket, _Host, Timeout) ->
+    case gen_tcp:recv(Socket, 0, Timeout) of
+        {ok, M} -> qresult(dns:decode_message(M));
+        Res -> Res
+    end;
+query2(Error, _Mod, _Socket, _Host, _Timeout) ->
+    Error.
 
 qresult(#dns_message{rc = ?DNS_RCODE_NOERROR}) -> ok;
 qresult(#dns_message{rc = Rc}) -> {error, dns:rcode_name(Rc)};
