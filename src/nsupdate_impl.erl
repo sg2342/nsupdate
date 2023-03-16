@@ -30,7 +30,7 @@ query(#{
     query1({Proto, ServerName, Port}, Timeout, Local, Packet).
 
 query1({udp, Host, Port}, Timeout, {LocalAddr, LocalPort}, Packet) ->
-    {ok, Socket} = gen_upd:open(
+    {ok, Socket} = gen_udp:open(
         LocalPort,
         [binary, {active, false}, {ip, LocalAddr}]
     ),
