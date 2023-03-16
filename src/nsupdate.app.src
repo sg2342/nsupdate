@@ -1,12 +1,12 @@
-{application, nsupdate,
- [{description, "nsupdate - Dynamic DNS update utility"},
-  {vsn, git},
-  {registered, []},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
-  {modules, []},
-  {links, []}
- ]}.
+{application, nsupdate, [
+    {description, "nsupdate - Dynamic DNS update utility"},
+    {vsn, git},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib
+    ]},
+    {env, []},
+    {modules, []},
+    {links, []}
+]}.

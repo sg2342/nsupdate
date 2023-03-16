@@ -24,3 +24,10 @@ notes:
 - `show` is not implemented
 - `send` will execute the query and terminate the program
 - update will always be sent over TCP
+
+
+test:
+====
+~~~~
+$ rebar3 as test do dialyzer,xref,fmt,lint
+~~~~
