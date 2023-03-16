@@ -39,11 +39,11 @@ main(["-k", KeyFile, FileName]) ->
     );
 main(_) ->
     Sn = filename:basename(escript:script_name()),
-    io:format("usage: ~s [ -k keyfile] [filename]~n~n", [Sn]),
+    io:format(standard_error, "usage: ~s [ -k keyfile] [filename]~n~n", [Sn]),
     halt(1).
 
 result(ok) ->
     ok;
 result({error, _} = E) ->
-    io:format("~n~n!!! ~p !!!~n~n", [E]),
+    io:format(standard_error, "~n~n!!! ~p !!!~n~n", [E]),
     halt(1).
