@@ -136,6 +136,10 @@ update_msg1({add, Name, Ttl, Class, Type, Data}) ->
         data = update_msg2(T, Data)
     }.
 
+update_msg2(?DNS_TYPE_MX, Data) ->
+    [PreferenceB, Exchange] = binary:split(Data, <<" ">>, [trim_all, global]),
+    Preference = erlang:binary_to_integer(PreferenceB),
+    #dns_rrdata_mx{preference = Preference, exchange = Exchange};
 update_msg2(?DNS_TYPE_A, {_, _, _, _} = A) ->
     #dns_rrdata_a{ip = A};
 update_msg2(?DNS_TYPE_A, B) ->
