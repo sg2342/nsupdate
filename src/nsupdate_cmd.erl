@@ -52,7 +52,7 @@ line1([<<"server">>, Host], _) ->
 line1([<<"server">>, Host, Port], _) ->
     {server, {erlang:binary_to_list(Host), erlang:binary_to_integer(Port)}}.
 
-splint_and_trim(L, Type) ->
+splint_and_trim(Type, L) ->
     [_, Data0] = string:split(L, Type, leading),
     string:trim(Data0, both, " ").
 
