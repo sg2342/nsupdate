@@ -159,7 +159,9 @@ update_msg2(?DNS_TYPE_AAAA, B) ->
 update_msg2(?DNS_TYPE_CNAME, Dname) ->
     #dns_rrdata_cname{dname = string:trim(Dname, both, " ")};
 update_msg2(?DNS_TYPE_TXT, Txt) ->
-    #dns_rrdata_txt{txt = string_list(Txt)}.
+    #dns_rrdata_txt{txt = string_list(Txt)};
+update_msg2(?DNS_TYPE_NS, Dname) ->
+    #dns_rrdata_ns{dname = Dname}.
 
 string_list(Bin) ->
     {ok, R} = re:compile("(\".*?\"|[^\" \\s]+)(?=\\s* |\\s*$)"),
