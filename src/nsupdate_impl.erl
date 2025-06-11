@@ -136,10 +136,28 @@ update_msg1({add, Name, Ttl, Class, Type, Data}) ->
         data = update_msg2(T, Data)
     }.
 
+update_msg2(?DNS_TYPE_SRV, Data) ->
+    [Priority, Weight, Port, Target] =
+        binary:split(Data, <<" ">>, [trim_all, global]),
+    #dns_rrdata_srv{
+        priority = binary_to_integer(Priority),
+        weight = binary_to_integer(Weight),
+        port = binary_to_integer(Port),
+        target = Target
+    };
+update_msg2(?DNS_TYPE_SSHFP, Data) ->
+    [Alg, FpType, Fp] = binary:split(Data, <<" ">>, [trim_all, global]),
+    #dns_rrdata_sshfp{
+        alg = binary_to_integer(Alg),
+        fp_type = binary_to_integer(FpType),
+        fp = binary:decode_hex(Fp)
+    };
 update_msg2(?DNS_TYPE_MX, Data) ->
-    [PreferenceB, Exchange] = binary:split(Data, <<" ">>, [trim_all, global]),
-    Preference = erlang:binary_to_integer(PreferenceB),
-    #dns_rrdata_mx{preference = Preference, exchange = Exchange};
+    [Preference, Exchange] = binary:split(Data, <<" ">>, [trim_all, global]),
+    #dns_rrdata_mx{
+        preference = erlang:binary_to_integer(Preference),
+        exchange = Exchange
+    };
 update_msg2(?DNS_TYPE_A, {_, _, _, _} = A) ->
     #dns_rrdata_a{ip = A};
 update_msg2(?DNS_TYPE_A, B) ->
